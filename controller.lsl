@@ -8,6 +8,19 @@ integer treeCount;
 list treeList;
 vector homePos;
 
+
+list listUnique( list lAll ) {
+    integer i;
+    list lFiltered = llList2List(lAll, 0, 0);
+    integer iAll = llGetListLength( lAll );
+    for (i = 1; i < iAll; ++i) {
+        if ( llListFindList(lFiltered, llList2List(lAll, i, i) ) == -1 ) {
+            lFiltered += llList2List(lAll, i, i);
+        }
+    }
+    return lFiltered;
+}
+
 default
 {
   state_entry() {
@@ -22,6 +35,21 @@ default
   touch_start(integer index) {
     key    avatarKey  = llDetectedKey(0);
     string avatarName =  llDetectedName(0);
+
+    integer treesInInventory = llGetListLength(treeList);
+    list uniqueTrees;
+    if (treesInInventory > 0) {
+        // get a list of the unique trees
+        integer i;
+        for (i = 0; i < llGetListLength(treeList); i++) {
+          string treeJson = (string)treeList[i];
+          string treeOldName = llJsonGetValue(treeJson, [3]);
+          uniqueTrees += treeOldName;
+        }
+        uniqueTrees = listUnique(uniqueTrees);
+        llOwnerSay("trees: "+(string)uniqueTrees);
+    }
+
     llDialog(avatarKey,"TreeReplacer Command", ["Inventory","Winter Replace","Summer Replace","Delete All"],DIALOG_CHANNEL);
     dialogListener = llListen(DIALOG_CHANNEL, "", avatarKey, "");
     llSetTimerEvent(60.0);
