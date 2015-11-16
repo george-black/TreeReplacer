@@ -1,13 +1,16 @@
 #define USE_LAZY_LISTS
 #include "channels.h"
 
-list treeTypes = ["Winter Tree", "Summer Tree"];
 string replaceTreeName;
+string newTreeName;
 integer dialogListener;
 integer treeCount;
 list treeList;
 list uniqueTrees;
+list newTreeList;
 vector homePos;
+key avatarKey;
+string avatarName;
 
 
 list listUnique( list lAll ) {
@@ -34,8 +37,8 @@ default
   }
 
   touch_start(integer index) {
-    key    avatarKey  = llDetectedKey(0);
-    string avatarName =  llDetectedName(0);
+    avatarKey  = llDetectedKey(0);
+    avatarName =  llDetectedName(0);
 
     integer treesInInventory = llGetListLength(treeList);
     uniqueTrees = [];
@@ -49,17 +52,18 @@ default
           uniqueTrees += treeOldName;
         }
         uniqueTrees = listUnique(uniqueTrees);
+        llOwnerSay("Choose the type of tree to replace:");
+
     }
 
     list dialogButtons = ["Inventory"];
-
     integer i;
     for (i = 0; i < llGetListLength(uniqueTrees); i++) {
-        dialogButtons += "Replace "+(string)i;
-        llOwnerSay("Tree ["+(string)i+"]: " + llList2String(uniqueTrees, i));
+        dialogButtons += "Tree "+(string)i;
+        llOwnerSay("Old Tree ["+(string)i+"]: " + llList2String(uniqueTrees, i));
     }
 
-    llDialog(avatarKey,"TreeReplacer Command", dialogButtons ,DIALOG_CHANNEL);
+    llDialog(avatarKey,"Replace trees", dialogButtons ,DIALOG_CHANNEL);
     dialogListener = llListen(DIALOG_CHANNEL, "", avatarKey, "");
     llSetTimerEvent(60.0);
   }
@@ -67,11 +71,11 @@ default
   listen(integer channel, string name, key id, string message) {
     llListenRemove(dialogListener);
     llSetTimerEvent(0.0);
-    if (llSubStringIndex(message,"Replace ") == 0) {
+    if (llSubStringIndex(message,"Tree ") == 0) {
       // this is a replace command
-      string replaceTreeIndex = llGetSubString(message,llStringLength("Replace "),-1);
+      string replaceTreeIndex = llGetSubString(message,llStringLength("Tree "),-1);
       replaceTreeName = llList2String(uniqueTrees,(integer)replaceTreeIndex);
-      state replace;
+      state replaceDialog;
     }
     else if (message == "Inventory") {
       llOwnerSay("Collecting tree inventory.");
@@ -90,6 +94,47 @@ default
     llSetTimerEvent(0.0);
   }
 }
+
+state replaceDialog {
+  state_entry() {
+    // get the list of objects in my inventory... they are the "to" list
+    list  dialogButtons;
+    llOwnerSay("Choose a new tree:");
+    newTreeList = [];
+    integer numObjects = llGetInventoryNumber(INVENTORY_OBJECT);
+    integer i;
+    for (i = 0; i < numObjects; i++) {
+        string objectName = llGetInventoryName(INVENTORY_OBJECT, i);
+        newTreeList += objectName;
+        dialogButtons += "Tree "+(string)i;
+        llOwnerSay("New Tree ["+(string)i+"]: "+objectName);
+    }
+
+    llDialog(avatarKey,"Replace with", dialogButtons ,DIALOG_CHANNEL);
+    dialogListener = llListen(DIALOG_CHANNEL, "", avatarKey, "");
+    llSetTimerEvent(60.0);
+  }
+
+  listen(integer channel, string name, key id, string message) {
+    llOwnerSay("got message: "+message);
+    if (llSubStringIndex(message,"Tree ") == 0) {
+      string newTreeIndex = llGetSubString(message,llStringLength("Tree "),-1);
+      newTreeName = llList2String(newTreeList,(integer)newTreeIndex);
+      state replace;
+    } else {
+      llOwnerSay("wat!?");
+      state default;
+    }
+  }
+
+  timer() {
+    llListenRemove(dialogListener);
+    llOwnerSay("Dialog timeout.");
+    llSetTimerEvent(0.0);
+    state default;
+  }
+}
+
 
 state deleteAll {
   state_entry() {
@@ -142,15 +187,13 @@ state replace {
         if (llSetRegionPos(treePos + <0,0,1>)) {
           llSleep(0.25);
           // replace it
-          //llRezAtRoot((string)treeTypes[replaceType], treePos, ZERO_VECTOR, treeRot, 0);
-          llOwnerSay("would have replaced tree "+treeOldName+" at "+(string)treePos);
-          //llOwnerSay("asking old tree to die!");
+          llRezAtRoot(newTreeName, treePos, ZERO_VECTOR, treeRot, 0);
           llRegionSay(COMM_CHANNEL,"die "+(string)treeKey);
         } else {
           llOwnerSay("unable to warp to tree #"+(string)i+" ("+treeOldName+") at "+(string)treePos+", skipping it.");
         }
       } else {
-        llOwnerSay("skipping tree "+treeOldName+" at "+(string)treePos);
+        // llOwnerSay("skipping tree "+treeOldName+" at "+(string)treePos);
       }
     }
     // fly home
@@ -165,6 +208,7 @@ state replace {
     llSetText("", ZERO_VECTOR, 0);
   }
 }
+
 
 state inventory {
   state_entry() {
