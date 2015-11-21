@@ -12,7 +12,6 @@ vector homePos;
 key avatarKey;
 string avatarName;
 
-
 list listUnique( list lAll ) {
     integer i;
     list lFiltered = llList2List(lAll, 0, 0);
@@ -63,8 +62,8 @@ default
         llOwnerSay("Old Tree ["+(string)i+"]: " + llList2String(uniqueTrees, i));
     }
 
-    llDialog(avatarKey,"Replace trees", dialogButtons ,DIALOG_CHANNEL);
     dialogListener = llListen(DIALOG_CHANNEL, "", avatarKey, "");
+    llDialog(avatarKey,"Replace trees", dialogButtons ,DIALOG_CHANNEL);
     llSetTimerEvent(60.0);
   }
 
@@ -110,8 +109,8 @@ state replaceDialog {
         llOwnerSay("New Tree ["+(string)i+"]: "+objectName);
     }
 
-    llDialog(avatarKey,"Replace with", dialogButtons ,DIALOG_CHANNEL);
     dialogListener = llListen(DIALOG_CHANNEL, "", avatarKey, "");
+    llDialog(avatarKey,"Replace with", dialogButtons ,DIALOG_CHANNEL);
     llSetTimerEvent(60.0);
   }
 

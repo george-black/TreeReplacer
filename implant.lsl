@@ -10,13 +10,17 @@ default
 
   listen(integer channel, string name, key id, string message)
   {
-    if (message == "inventory") {
-      string json = llList2Json(JSON_ARRAY, [(string)llGetKey(), (string)llGetRootPosition(), llGetRootRotation(), llGetLinkName(LINK_ROOT)]);
-      llRegionSay(COMM_CHANNEL, json);
-    }
+    if (llGetOwnerKey(id) == llGetOwner()) {
+      if (message == "inventory") {
+        string json = llList2Json(JSON_ARRAY, [(string)llGetKey(), (string)llGetRootPosition(), llGetRootRotation(), llGetLinkName(LINK_ROOT)]);
+        llRegionSay(COMM_CHANNEL, json);
+      }
 
-    if (message == ("die "+(string)llGetKey())) {
-      llDie();
+      if (message == ("die "+(string)llGetKey())) {
+        // the object sending the command must be owned
+        // by the same person as this object
+        llDie();
+      }
     }
   }
 }
