@@ -78,9 +78,11 @@ default
     }
     else if (message == "Inventory") {
       llOwnerSay("Collecting tree inventory.");
+      llSetTimerEvent(0.0);
       state inventory;
     }
     else if (message == "Delete All") {
+      llSetTimerEvent(0.0);
       state deleteAll;
     } else {
       llOwnerSay("wat?");
@@ -89,7 +91,7 @@ default
 
   timer() {
     llListenRemove(dialogListener);
-    llOwnerSay("Dialog timeout.");
+    llOwnerSay("Tree Dialog timeout.");
     llSetTimerEvent(0.0);
   }
 }
@@ -119,16 +121,18 @@ state replaceDialog {
     if (llSubStringIndex(message,"Tree ") == 0) {
       string newTreeIndex = llGetSubString(message,llStringLength("Tree "),-1);
       newTreeName = llList2String(newTreeList,(integer)newTreeIndex);
+      llSetTimerEvent(0.0);
       state replace;
     } else {
       llOwnerSay("wat!?");
+      llSetTimerEvent(0.0);
       state default;
     }
   }
 
   timer() {
     llListenRemove(dialogListener);
-    llOwnerSay("Dialog timeout.");
+    llOwnerSay("Replace Dialog timeout.");
     llSetTimerEvent(0.0);
     state default;
   }
