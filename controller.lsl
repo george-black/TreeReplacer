@@ -35,6 +35,11 @@ default
     }
   }
 
+  on_rez(integer startParam)
+  {
+    llResetScript();
+  }
+
   touch_start(integer index) {
     avatarKey  = llDetectedKey(0);
     avatarName =  llDetectedName(0);
@@ -116,6 +121,11 @@ state replaceDialog {
     llSetTimerEvent(60.0);
   }
 
+  on_rez(integer startParam)
+  {
+    llResetScript();
+  }
+
   listen(integer channel, string name, key id, string message) {
     llOwnerSay("got message: "+message);
     if (llSubStringIndex(message,"Tree ") == 0) {
@@ -158,6 +168,12 @@ state deleteAll {
     treeList = [];
     state default;
   }
+
+  on_rez(integer startParam)
+  {
+    llResetScript();
+  }
+
   state_exit() {
     llSetText("", ZERO_VECTOR, 0);
   }
@@ -207,6 +223,11 @@ state replace {
     state default;
   }
 
+  on_rez(integer startParam)
+  {
+    llResetScript();
+  }
+
   state_exit() {
     llSetText("", ZERO_VECTOR, 0);
   }
@@ -223,6 +244,12 @@ state inventory {
     llOwnerSay("Please wait (5 seconds)");
     llSetTimerEvent(5);
   }
+
+  on_rez(integer startParam)
+  {
+    llResetScript();
+  }
+
 
   listen(integer channel, string name, key id, string message) {
     //llOwnerSay("got message from "+(string)id+": "+message);
